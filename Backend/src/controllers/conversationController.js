@@ -82,7 +82,7 @@ export const updateConversation = async (req, res, next) => {
     const conversation = await Conversation.findByIdAndUpdate(
       req.params.id,
       { title },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!conversation) {
