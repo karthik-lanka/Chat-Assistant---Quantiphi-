@@ -7,20 +7,30 @@ export default function MessageInput({ onSend }) {
   const { isStreaming, stopStreaming } = useChat();
   const textareaRef = useRef(null);
 
+  // Auto-expand textarea up to 150px
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height =
-        Math.min(textareaRef.current.scrollHeight, 150) + 'px';
+      const scrollH = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${Math.min(scrollH, 150)}px`;
     }
   }, [input]);
+
+  // Focus textarea when streaming completes
+  useEffect(() => {
+    if (!isStreaming && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [isStreaming]);
 
   const handleSubmit = () => {
     const trimmed = input.trim();
     if (!trimmed || isStreaming) return;
     onSend(trimmed);
     setInput('');
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -37,7 +47,11 @@ export default function MessageInput({ onSend }) {
           <textarea
             ref={textareaRef}
             className="message-input"
-            placeholder="Type your message..."
+            placeholder={
+              isStreaming
+                ? 'AI is generating a response...'
+                : 'Type your message... (Shift+Enter for newline)'
+            }
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -48,24 +62,26 @@ export default function MessageInput({ onSend }) {
             <button
               className="send-btn"
               onClick={stopStreaming}
-              title="Stop generating"
+              title="Stop generation"
               style={{ background: 'var(--error)' }}
+              type="button"
             >
-              <Square size={16} />
+              <Square size={16} fill="white" />
             </button>
           ) : (
             <button
               className="send-btn"
               onClick={handleSubmit}
               disabled={!input.trim()}
-              title="Send message"
+              title="Send message (Enter)"
+              type="button"
             >
               <Send size={16} />
             </button>
           )}
         </div>
         <div className="input-hint">
-          Press Enter to send, Shift+Enter for new line
+          Press <strong>Enter</strong> to send, <strong>Shift+Enter</strong> for a new line
         </div>
       </div>
     </div>

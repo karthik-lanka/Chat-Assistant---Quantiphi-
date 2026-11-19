@@ -1,37 +1,43 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import app from './app.js';
+import { connectDatabase } from './config/database.js';
+import env from './config/env.js';
 
-dotenv.config();
+let server;
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const startServer = async () => {
+  try {
+    await connectDatabase();
+    server = app.listen(env.PORT, () => {
+      console.log(`[Server] Quantiphi AI Chat Assistant backend listening on port ${env.PORT}`);
+    });
+  } catch (error) {
+    console.error('[Server] Failed to initialize backend server:', error.message);
+    process.exit(1);
+  }
+};
 
-// Middleware
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
+const handleShutdown = async (signal) => {
+  console.log(`[Server] Received ${signal}. Initiating graceful shutdown...`);
+  if (server) {
+    server.close(async () => {
+      console.log('[Server] HTTP server closed.');
+      try {
+        await mongoose.connection.close();
+        console.log('[Database] MongoDB connection closed.');
+      } catch (err) {
+        console.error('[Database] Error closing MongoDB connection:', err.message);
+      }
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
+};
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
-});
+process.on('SIGINT', () => handleShutdown('SIGINT'));
+process.on('SIGTERM', () => handleShutdown('SIGTERM'));
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err.message);
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal server error',
-  });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+startServer();
 
 export default app;

@@ -1,22 +1,25 @@
-import { useChat } from '../context/ChatContext';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Code2, HelpCircle, LayoutGrid, Lightbulb } from 'lucide-react';
 
 const SUGGESTED_PROMPTS = [
   {
+    icon: Lightbulb,
     title: 'Explain a concept',
-    text: 'What is the difference between REST and GraphQL?',
+    text: 'What is the difference between REST and GraphQL APIs?',
   },
   {
+    icon: Code2,
     title: 'Write code',
-    text: 'Create a React custom hook for form validation',
+    text: 'Create a reusable React hook for local storage with state synchronization',
   },
   {
+    icon: HelpCircle,
     title: 'Debug help',
-    text: 'Why might a useEffect run twice in development?',
+    text: 'Why does useEffect run twice in React 18+ development mode?',
   },
   {
+    icon: LayoutGrid,
     title: 'Architecture advice',
-    text: 'How should I structure a full-stack Node.js project?',
+    text: 'How should I structure a full-stack Node.js and React application for scalability?',
   },
 ];
 
@@ -28,19 +31,26 @@ export default function WelcomeScreen({ onSendPrompt }) {
       </div>
       <h1 className="welcome-title">Quantiphi AI Chat Assistant</h1>
       <p className="welcome-subtitle">
-        Start a conversation with AI. Ask questions, get explanations, write code, and more.
+        Powered by Google Gemini. Ask technical questions, get code examples, architectural reviews, or brainstorm ideas.
       </p>
       <div className="suggested-prompts">
-        {SUGGESTED_PROMPTS.map((prompt, i) => (
-          <button
-            key={i}
-            className="suggested-prompt"
-            onClick={() => onSendPrompt(prompt.text)}
-          >
-            <div className="suggested-prompt-title">{prompt.title}</div>
-            <div className="suggested-prompt-text">{prompt.text}</div>
-          </button>
-        ))}
+        {SUGGESTED_PROMPTS.map((prompt, i) => {
+          const Icon = prompt.icon;
+          return (
+            <button
+              key={i}
+              className="suggested-prompt"
+              onClick={() => onSendPrompt(prompt.text)}
+              type="button"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <Icon size={14} color="var(--primary)" />
+                <div className="suggested-prompt-title">{prompt.title}</div>
+              </div>
+              <div className="suggested-prompt-text">{prompt.text}</div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
